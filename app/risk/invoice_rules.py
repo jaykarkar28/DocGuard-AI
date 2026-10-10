@@ -98,8 +98,22 @@ def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
         value = invoice.get(field)
         amount = _parse_decimal(value)
 
+        
         if amount is None:
-            if value is not None and value != "":
+            if value is None or value == "":
+                if field == "subtotal":
+                    add(
+                        "INV-009",
+                        "high",
+                        "Subtotal is missing; line-item reconciliation cannot be verified.",
+                    )
+                elif field in {"tax_amount", "total_amount"}:
+                    add(
+                        "INV-010",
+                        "high",
+                        f"Field '{field}' is missing; total reconciliation cannot be verified.",
+                    )
+            else:
                 add(
                     "INV-008",
                     "high",
@@ -192,3 +206,4 @@ def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
                 )
 
     return risks
+
