@@ -23,3 +23,6 @@ outputs/
 
 # Keep folder placeholders
 !.gitkeep
+
+# Generated dataset splits
+datasets/splits/
