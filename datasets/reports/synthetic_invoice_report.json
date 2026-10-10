@@ -1,0 +1,33 @@
+{
+  "validation_passed": true,
+  "errors": [],
+  "total_records": 33,
+  "unique_document_ids": 33,
+  "valid_records": 3,
+  "defective_records": 30,
+  "unique_split_groups": 3,
+  "records_per_split_group": {
+    "invoice-family-SYN-INV-00001": 11,
+    "invoice-family-SYN-INV-00002": 11,
+    "invoice-family-SYN-INV-00003": 11
+  },
+  "defect_label_counts": {
+    "INV-001": 3,
+    "INV-002": 3,
+    "INV-003": 3,
+    "INV-004": 3,
+    "INV-005": 3,
+    "INV-006": 3,
+    "INV-007": 3,
+    "INV-008": 3,
+    "INV-009": 3,
+    "INV-010": 6
+  },
+  "missing_defect_types": [],
+  "seed": 42,
+  "base_invoice_count": 3,
+  "expected_records": 33,
+  "output_path": "datasets\\processed\\synthetic_invoices.jsonl",
+  "license_declaration": "CC0-1.0",
+  "note": "Synthetic structured records; not rendered invoice images. Confirm project release terms before external distribution."
+}
