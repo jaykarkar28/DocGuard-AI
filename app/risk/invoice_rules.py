@@ -11,32 +11,42 @@ from app.data.synthetic_invoices import SUPPORTED_CURRENCIES
 
 
 def _parse_decimal(value: Any) -> Decimal | None:
+    """Parse a finite decimal value, returning None for invalid input."""
     if value is None or value == "":
         return None
 
     try:
-        return Decimal(str(value))
-    except (InvalidOperation, ValueError):
+        amount = Decimal(str(value))
+        return amount if amount.is_finite() else None
+    except (InvalidOperation, ValueError, TypeError):
         return None
 
 
+def _is_missing(value: Any) -> bool:
+    return value is None or (
+        isinstance(value, str) and not value.strip()
+    )
+
+
 def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
-    """Return risk annotations for detectable invoice defects."""
+    """Return deterministic risk findings for a structured invoice."""
     risks: list[dict[str, str]] = []
 
-    def add(
-        risk_type: str,
-        severity: str,
-        evidence: str,
-    ) -> None:
-        risks.append(
-            {
-                "risk_type": risk_type,
-                "severity": severity,
-                "evidence": evidence,
-                "label_source": "rule",
-            }
+    def add(risk_type: str, severity: str, evidence: str) -> None:
+        risks.append({
+            "risk_type": risk_type,
+            "severity": severity,
+            "evidence": evidence,
+            "label_source": "rule",
+        })
+
+    if not isinstance(invoice, dict):
+        add(
+            "INV-009",
+            "high",
+            "Invoice payload must be an object.",
         )
+        return risks
 
     required_fields = {
         "invoice_number": "INV-001",
@@ -47,10 +57,7 @@ def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
     }
 
     for field, rule_id in required_fields.items():
-        value = invoice.get(field)
-        if value is None or (
-            isinstance(value, str) and not value.strip()
-        ):
+        if _is_missing(invoice.get(field)):
             add(
                 rule_id,
                 "high",
@@ -58,16 +65,19 @@ def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
             )
 
     parsed_dates: dict[str, date] = {}
+
     for field in ("invoice_date", "due_date"):
         value = invoice.get(field)
-        if value is None or value == "":
+
+        if _is_missing(value):
             continue
 
         try:
             parsed_dates[field] = date.fromisoformat(str(value))
-        except ValueError:
+        except (ValueError, TypeError):
+            rule_id = "INV-002" if field == "invoice_date" else "INV-003"
             add(
-                f"{'INV-002' if field == 'invoice_date' else 'INV-003'}",
+                rule_id,
                 "high",
                 f"Field '{field}' is not a valid ISO calendar date.",
             )
@@ -91,23 +101,21 @@ def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
             f"Currency '{currency}' is outside the configured pilot allowlist.",
         )
 
-    monetary_fields = ("subtotal", "tax_amount", "total_amount")
     amounts: dict[str, Decimal] = {}
 
-    for field in monetary_fields:
+    for field in ("subtotal", "tax_amount", "total_amount"):
         value = invoice.get(field)
         amount = _parse_decimal(value)
 
-        
         if amount is None:
-            if value is None or value == "":
+            if _is_missing(value):
                 if field == "subtotal":
                     add(
                         "INV-009",
                         "high",
                         "Subtotal is missing; line-item reconciliation cannot be verified.",
                     )
-                elif field in {"tax_amount", "total_amount"}:
+                else:
                     add(
                         "INV-010",
                         "high",
@@ -117,11 +125,12 @@ def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
                 add(
                     "INV-008",
                     "high",
-                    f"Field '{field}' is not a valid decimal amount.",
+                    f"Field '{field}' is not a valid finite decimal amount.",
                 )
             continue
 
         amounts[field] = amount
+
         if amount < 0:
             add(
                 "INV-008",
@@ -168,42 +177,56 @@ def evaluate_invoice(invoice: dict[str, Any]) -> list[dict[str, str]]:
             )
             continue
 
-        expected_line_total = (quantity * unit_price).quantize(
-            Decimal("0.01")
-        )
+        try:
+            expected_line_total = (quantity * unit_price).quantize(
+                Decimal("0.01")
+            )
+        except InvalidOperation:
+            add(
+                "INV-009",
+                "high",
+                f"Line item {index} values exceed the supported numeric range.",
+            )
+            continue
+
         if expected_line_total != line_total:
             add(
                 "INV-009",
                 "medium",
-                f"Line item {index} total does not match quantity × unit price.",
+                f"Line item {index} total does not match quantity x unit price.",
             )
 
         line_totals.append(line_total)
 
-    if line_items and len(line_totals) == len(line_items):
-        if "subtotal" in amounts:
-            if sum(line_totals, Decimal("0.00")) != amounts["subtotal"]:
-                add(
-                    "INV-009",
-                    "medium",
-                    "Subtotal does not equal the sum of line-item totals.",
-                )
-    elif not line_items:
+    if not line_items:
         add(
             "INV-009",
             "medium",
             "Invoice contains no line items.",
         )
+    elif len(line_totals) == len(line_items) and "subtotal" in amounts:
+        if sum(line_totals, Decimal("0.00")) != amounts["subtotal"]:
+            add(
+                "INV-009",
+                "medium",
+                "Subtotal does not equal the sum of line-item totals.",
+            )
 
     if "subtotal" in amounts and "tax_amount" in amounts:
         if "total_amount" in amounts:
-            expected_total = amounts["subtotal"] + amounts["tax_amount"]
-            if expected_total != amounts["total_amount"]:
+            try:
+                expected_total = amounts["subtotal"] + amounts["tax_amount"]
+                if expected_total != amounts["total_amount"]:
+                    add(
+                        "INV-010",
+                        "medium",
+                        "Total does not equal subtotal plus tax.",
+                    )
+            except InvalidOperation:
                 add(
                     "INV-010",
-                    "medium",
-                    "Total does not equal subtotal plus tax.",
+                    "high",
+                    "Monetary values exceed the supported arithmetic range.",
                 )
 
     return risks
-

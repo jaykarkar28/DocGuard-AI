@@ -110,3 +110,59 @@ def test_valid_invoice_has_no_risks():
     invoice = make_invoice()
 
     assert evaluate_invoice(invoice) == []
+
+
+
+from app.data.synthetic_invoices import generate_valid_invoices
+from app.risk.invoice_rules import evaluate_invoice
+
+
+def test_non_dictionary_invoice_does_not_crash():
+    assert any(
+        risk["risk_type"] == "INV-009"
+        for risk in evaluate_invoice(None)
+    )
+
+
+def test_nan_subtotal_is_rejected():
+    invoice = generate_valid_invoices(1)[0]["invoice"].copy()
+    invoice["subtotal"] = "NaN"
+
+    risks = evaluate_invoice(invoice)
+
+    assert any(
+        risk["risk_type"] == "INV-008"
+        and "subtotal" in risk["evidence"]
+        for risk in risks
+    )
+
+
+def test_infinite_total_is_rejected():
+    invoice = generate_valid_invoices(1)[0]["invoice"].copy()
+    invoice["total_amount"] = "Infinity"
+
+    risks = evaluate_invoice(invoice)
+
+    assert any(
+        risk["risk_type"] == "INV-008"
+        and "total_amount" in risk["evidence"]
+        for risk in risks
+    )
+
+
+def test_whitespace_required_field_is_detected():
+    invoice = generate_valid_invoices(1)[0]["invoice"].copy()
+    invoice["supplier_name"] = "   "
+
+    risks = evaluate_invoice(invoice)
+
+    assert any(
+        risk["risk_type"] == "INV-005"
+        for risk in risks
+    )
+
+
+def test_valid_invoice_still_has_no_risks():
+    invoice = generate_valid_invoices(1)[0]["invoice"]
+
+    assert evaluate_invoice(invoice) == []
