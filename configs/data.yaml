@@ -1,0 +1,11 @@
+﻿dataset_name: docguard
+document_types:
+  - invoice
+  - contract
+
+raw_dir: datasets/raw
+processed_dir: datasets/processed
+annotation_dir: datasets/annotations
+split_dir: datasets/splits
+
+random_seed: 42

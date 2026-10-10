@@ -1,0 +1,3 @@
+﻿model_name: microsoft/layoutlmv3-base
+num_document_classes: 2
+max_length: 512

@@ -1,0 +1,25 @@
+﻿.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+*.log
+
+# Datasets and generated document images
+datasets/raw/*
+datasets/processed/*
+!datasets/raw/.gitkeep
+!datasets/processed/.gitkeep
+
+# Model checkpoints and experiment outputs
+models/checkpoints/*
+models/exports/*
+experiments/reports/*
+mlruns/
+outputs/
+
+# Keep folder placeholders
+!.gitkeep

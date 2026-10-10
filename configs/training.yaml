@@ -1,0 +1,4 @@
+﻿seed: 42
+epochs: 3
+batch_size: 2
+learning_rate: 0.00002
