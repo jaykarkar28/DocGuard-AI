@@ -1,0 +1,73 @@
+{
+  "seed": 42,
+  "requested_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "splits": {
+    "train": {
+      "record_count": 231,
+      "group_count": 21,
+      "valid_records": 21,
+      "defective_records": 210,
+      "defect_label_counts": {
+        "INV-001": 21,
+        "INV-002": 21,
+        "INV-003": 21,
+        "INV-004": 21,
+        "INV-005": 21,
+        "INV-006": 21,
+        "INV-007": 21,
+        "INV-008": 21,
+        "INV-009": 21,
+        "INV-010": 42
+      },
+      "document_ids_unique_within_split": true
+    },
+    "validation": {
+      "record_count": 55,
+      "group_count": 5,
+      "valid_records": 5,
+      "defective_records": 50,
+      "defect_label_counts": {
+        "INV-001": 5,
+        "INV-002": 5,
+        "INV-003": 5,
+        "INV-004": 5,
+        "INV-005": 5,
+        "INV-006": 5,
+        "INV-007": 5,
+        "INV-008": 5,
+        "INV-009": 5,
+        "INV-010": 10
+      },
+      "document_ids_unique_within_split": true
+    },
+    "test": {
+      "record_count": 44,
+      "group_count": 4,
+      "valid_records": 4,
+      "defective_records": 40,
+      "defect_label_counts": {
+        "INV-001": 4,
+        "INV-002": 4,
+        "INV-003": 4,
+        "INV-004": 4,
+        "INV-005": 4,
+        "INV-006": 4,
+        "INV-007": 4,
+        "INV-008": 4,
+        "INV-009": 4,
+        "INV-010": 8
+      },
+      "document_ids_unique_within_split": true
+    }
+  },
+  "total_records": 330,
+  "unique_document_ids": 330,
+  "duplicate_document_ids": 0,
+  "group_leakage": {},
+  "leakage_check_passed": true,
+  "document_id_check_passed": true
+}
