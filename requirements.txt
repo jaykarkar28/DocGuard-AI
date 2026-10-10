@@ -1,3 +1,4 @@
 ﻿pydantic
 pytest
 PyYAML
+Pillow

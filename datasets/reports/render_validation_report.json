@@ -1,0 +1,25 @@
+{
+  "validation_passed": true,
+  "errors": [],
+  "annotation_count": 330,
+  "unique_annotation_ids": 330,
+  "split_counts": {
+    "train": 231,
+    "validation": 55,
+    "test": 44
+  },
+  "split_record_count": 330,
+  "missing_annotations": 0,
+  "unexpected_annotations": 0,
+  "missing_images": 0,
+  "wrong_image_dimensions": 0,
+  "image_hash_mismatches": 0,
+  "invalid_entities_or_boxes": 0,
+  "split_group_leakage": {},
+  "inconsistent_group_templates": {},
+  "template_counts": {
+    "sidebar": 110,
+    "minimal": 110,
+    "classic": 110
+  }
+}
