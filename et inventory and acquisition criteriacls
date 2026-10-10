@@ -1,0 +1,93 @@
+[1mdiff --git a/docs/datasets/dataset_inventory.md b/docs/datasets/dataset_inventory.md[m
+[1mnew file mode 100644[m
+[1mindex 0000000..1b3d3fa[m
+[1m--- /dev/null[m
+[1m+++ b/docs/datasets/dataset_inventory.md[m
+[36m@@ -0,0 +1,87 @@[m
+[32m+[m[32m# DocGuard AI — Dataset Inventory[m
+[32m+[m
+[32m+[m[32m**Status:** Research in progress[m[41m  [m
+[32m+[m[32m**Last reviewed:** 2026-10-10[m[41m  [m
+[32m+[m[32m**Project scope:** Invoice and contract document intelligence[m[41m  [m
+[32m+[m[32m**Policy:** Do not download large datasets until suitability and acquisition decisions are documented.[m
+[32m+[m
+[32m+[m[32m## 1. Dataset selection criteria[m
+[32m+[m
+[32m+[m[32mEvaluate each source against:[m
+[32m+[m
+[32m+[m[32m- Relevance to invoices or contracts[m
+[32m+[m[32m- Availability of original images/PDFs and text[m
+[32m+[m[32m- Availability and granularity of annotations[m
+[32m+[m[32m- License and attribution obligations[m
+[32m+[m[32m- Dataset size and local/GPU resource requirements[m
+[32m+[m[32m- Suitability for classification, entity extraction, OCR, or layout understanding[m
+[32m+[m[32m- Ability to prevent train/validation/test leakage[m
+[32m+[m[32m- Reproducibility and provenance[m
+[32m+[m
+[32m+[m[32m## 2. Candidate inventory[m
+[32m+[m
+[32m+[m[32m| Dataset | Intended use | Annotation coverage | License / terms | Decision |[m
+[32m+[m[32m|---|---|---|---|---|[m
+[32m+[m[32m| CORD | Receipt-like field extraction pilot | Receipt images, text/boxes, semantic parsing labels | CC BY 4.0; preserve attribution | Pilot only |[m
+[32m+[m[32m| CUAD | Contract clause extraction pilot | 510 contracts; 41 clause types; expert annotations | CC BY 4.0; preserve attribution | Candidate for contract-text experiments |[m
+[32m+[m[32m| FUNSD | OCR/layout/form-understanding experiment | 199 scanned forms; word boxes, entities and relationships | Original dataset described as non-commercial research/educational use | Optional; verify intended use before acquisition |[m
+[32m+[m[32m| DocLayNet | General document layout segmentation | 80,863 pages; bounding-box layout annotations | Community Data License Agreement – Permissive 1.0 | Defer due to download size |[m
+[32m+[m[32m| Synthetic invoices | Invoice-specific field extraction and defect detection | Generated fields, boxes, and controlled risk labels | Original project-generated content; document generation method and dependencies | Required |[m
+[32m+[m[32m| Synthetic contracts | Contract-specific missing clauses and risk scenarios | Generated clauses, entities, and controlled risk labels | Original project-generated content; document generation method and dependencies | Required |[m
+[32m+[m
+[32m+[m[32m## 3. Official sources[m
+[32m+[m
+[32m+[m[32m- CORD: https://github.com/clovaai/cord[m
+[32m+[m[32m- CUAD: https://github.com/The-Atticus-Project/cuad[m
+[32m+[m[32m- CUAD legal information: https://www.atticusprojectai.org/legal/[m
+[32m+[m[32m- FUNSD: https://github.com/crcresearch/FUNSD[m
+[32m+[m[32m- DocLayNet: https://github.com/DS4SD/DocLayNet[m
+[32m+[m
+[32m+[m[32mBefore acquisition, record the exact download URL, retrieval date, release/version or commit, license URL, checksum where practical, and any restrictions applying to the actual files.[m
+[32m+[m
+[32m+[m[32m## 4. Intended model tasks[m
+[32m+[m
+[32m+[m[32m1. Document classification: invoice vs. contract.[m
+[32m+[m[32m2. Invoice entity extraction: invoice number, dates, supplier, totals, tax, and currency.[m
+[32m+[m[32m3. Contract entity/clause extraction: parties, dates, renewal, termination, and selected clause types.[m
+[32m+[m[32m4. Layout-aware extraction: use image coordinates and OCR tokens where suitable annotations exist.[m
+[32m+[m[32m5. Risk detection: identify defined defects using deterministic rules and annotated ground truth.[m
+[32m+[m
+[32m+[m[32mDo not treat receipt fields as equivalent to invoice fields. Do not treat clause extraction accuracy as proof that a model can detect legal risk correctly.[m
+[32m+[m
+[32m+[m[32m## 5. Synthetic-data policy[m
+[32m+[m
+[32m+[m[32m- Generate valid and intentionally defective examples from documented templates.[m
+[32m+[m[32m- Keep generation parameters and random seeds reproducible.[m
+[32m+[m[32m- Store expected field values and risk labels separately from model outputs.[m
+[32m+[m[32m- Include defect categories such as missing invoice number, invalid date order, inconsistent totals, missing required clause, and ambiguous renewal language.[m
+[32m+[m[32m- Do not create contradictory ground truth.[m
+[32m+[m[32m- Keep all variants derived from the same template family in the same data split.[m
+[32m+[m[32m- Clearly label synthetic data in every record and report.[m
+[32m+[m
+[32m+[m[32m## 6. Split and leakage policy[m
+[32m+[m
+[32m+[m[32m- Preserve official benchmark splits when using them for benchmark evaluation.[m
+[32m+[m[32m- For custom data, group by source document, contract family, or synthetic template family before splitting.[m
+[32m+[m[32m- Never split near-duplicate pages or generated variants across train, validation, and test.[m
+[32m+[m[32m- Record split assignments in versioned JSONL artifacts.[m
+[32m+[m[32m- Do not use test-set results to tune training or thresholds.[m
+[32m+[m
+[32m+[m[32m## 7. Acquisition gate[m
+[32m+[m
+[32m+[m[32mA dataset may be acquired only after recording:[m
+[32m+[m
+[32m+[m[32m- [ ] Intended task and limitations[m
+[32m+[m[32m- [ ] Exact source and version[m
+[32m+[m[32m- [ ] License and attribution requirements[m
+[32m+[m[32m- [ ] Download size and storage requirements[m
+[32m+[m[32m- [ ] Annotation format and mapping plan[m
+[32m+[m[32m- [ ] Provenance fields[m
+[32m+[m[32m- [ ] Split/leakage strategy[m
+[32m+[m[32m- [ ] Validation procedure[m
+[32m+[m
+[32m+[m[32m## 8. Current decision[m
+[32m+[m
+[32m+[m[32mStart with a small, controlled pilot. Use CORD for receipt-like parsing experiments, evaluate CUAD for contract-text extraction, and create synthetic invoice examples for the project's actual invoice requirements. Defer DocLayNet until a concrete layout experiment justifies its storage cost. Keep FUNSD optional and respect its stated usage restrictions.[m
+[32m+[m
+[32m+[m[32m**Research limitation:** This inventory is an engineering decision record, not legal advice. Re-check the exact dataset terms before downloading, redistributing, or using any data in a public portfolio.[m

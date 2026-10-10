@@ -85,3 +85,43 @@ A dataset may be acquired only after recording:
 Start with a small, controlled pilot. Use CORD for receipt-like parsing experiments, evaluate CUAD for contract-text extraction, and create synthetic invoice examples for the project's actual invoice requirements. Defer DocLayNet until a concrete layout experiment justifies its storage cost. Keep FUNSD optional and respect its stated usage restrictions.
 
 **Research limitation:** This inventory is an engineering decision record, not legal advice. Re-check the exact dataset terms before downloading, redistributing, or using any data in a public portfolio.
+
+
+
+# Synthetic Invoice Test Plan
+
+## Schema and data integrity
+
+- [ ] Valid invoice passes validation.
+- [ ] Missing required field is represented consistently.
+- [ ] Invalid dates are rejected or labelled correctly.
+- [ ] Unsupported currency code is handled correctly.
+- [ ] Negative monetary values are detected.
+- [ ] Duplicate document IDs are rejected.
+
+## Financial consistency
+
+- [ ] Line-item totals reconcile with subtotal.
+- [ ] Subtotal plus tax reconciles with total.
+- [ ] Decimal rounding follows the documented currency policy.
+- [ ] Missing monetary values do not silently become zero.
+
+## Ground truth and risk rules
+
+- [ ] Every single-defect example triggers its intended risk label.
+- [ ] Valid invoices produce no risk labels.
+- [ ] Each risk label includes evidence and a rule identifier.
+- [ ] Multiple-defect examples produce the complete expected label set.
+- [ ] No unexpected risk labels appear.
+
+## Reproducibility and leakage
+
+- [ ] Fixed seed produces reproducible output.
+- [ ] Generated variants preserve their template-family ID.
+- [ ] Template families do not cross dataset splits.
+- [ ] Source and schema versions are recorded.
+
+## Acceptance gate
+
+Do not generate the full dataset until all initial schema, arithmetic, and risk-rule tests pass.
+
