@@ -1,6 +1,8 @@
 {
   "validation_passed": true,
   "errors": [],
+  "source_record_count": 330,
+  "source_unique_document_ids": 330,
   "annotation_count": 330,
   "unique_annotation_ids": 330,
   "split_counts": {
@@ -11,7 +13,10 @@
   "split_record_count": 330,
   "missing_annotations": 0,
   "unexpected_annotations": 0,
+  "source_alignment_error_count": 0,
+  "source_alignment_errors": [],
   "missing_images": 0,
+  "unreadable_images": 0,
   "wrong_image_dimensions": 0,
   "image_hash_mismatches": 0,
   "invalid_entities_or_boxes": 0,
