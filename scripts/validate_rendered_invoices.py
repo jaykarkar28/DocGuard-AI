@@ -13,7 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from app.data.annotation_validation import validate_source_alignment
-
+from app.data.annotation_quality import (
+    find_suspicious_overlaps,
+    validate_annotation_geometry,
+)
 
 SPLITS_DIR = ROOT / "datasets/splits/synthetic_invoices"
 ANNOTATIONS_FILE = (
@@ -65,13 +68,9 @@ def validate() -> dict:
     source_records = read_jsonl(SOURCE_FILE)
     annotations = read_jsonl(ANNOTATIONS_FILE)
 
-    source_ids = [
-        record.get("document_id")
-        for record in source_records
-    ]
+    source_ids = [record.get("document_id") for record in source_records]
     annotation_ids = [
-        record.get("document_id")
-        for record in annotations
+        record.get("document_id") for record in annotations
     ]
 
     source_id_counts = Counter(source_ids)
@@ -217,7 +216,7 @@ def validate() -> dict:
         )
 
     # ---------------------------------------------------------
-    # 5. Validate image files, dimensions, hashes and boxes
+    # 5. Validate images, hashes, geometry and overlap warnings
     # ---------------------------------------------------------
     template_counts: Counter = Counter()
     group_templates: dict[str, set[str]] = defaultdict(set)
@@ -228,6 +227,9 @@ def validate() -> dict:
     bad_boxes = 0
     unreadable_images = 0
 
+    geometry_errors: list[str] = []
+    overlap_warnings: list[dict] = []
+
     for doc_id, annotation in annotation_by_id.items():
         group_id = annotation.get("split_group_id")
         template_id = annotation.get("template_id")
@@ -237,6 +239,16 @@ def validate() -> dict:
 
         if template_id:
             template_counts[template_id] += 1
+
+        # Additional annotation geometry validation.
+        geometry_errors.extend(
+            validate_annotation_geometry(annotation)
+        )
+
+        # Overlap is diagnostic only; it does not automatically fail validation.
+        overlap_warnings.extend(
+            find_suspicious_overlaps(annotation)
+        )
 
         raw_image_path = annotation.get("image_path")
 
@@ -261,9 +273,7 @@ def validate() -> dict:
 
         except Exception as exc:
             unreadable_images += 1
-            errors.append(
-                f"Cannot read image for {doc_id}: {exc}"
-            )
+            errors.append(f"Cannot read image for {doc_id}: {exc}")
             continue
 
         if (width, height) != EXPECTED_SIZE:
@@ -287,6 +297,7 @@ def validate() -> dict:
             bad_boxes += 1
             continue
 
+        # Retain the existing strict box and entity checks.
         for entity in entities:
             if not isinstance(entity, dict):
                 bad_boxes += 1
@@ -315,6 +326,9 @@ def validate() -> dict:
     if missing_images:
         errors.append(f"Missing images: {missing_images}")
 
+    if unreadable_images:
+        errors.append(f"Unreadable images: {unreadable_images}")
+
     if bad_dimensions:
         errors.append(f"Wrong image dimensions: {bad_dimensions}")
 
@@ -323,6 +337,12 @@ def validate() -> dict:
 
     if bad_boxes:
         errors.append(f"Invalid entities or bounding boxes: {bad_boxes}")
+
+    if geometry_errors:
+        errors.extend(
+            f"Annotation geometry: {message}"
+            for message in geometry_errors
+        )
 
     # ---------------------------------------------------------
     # 6. Check template consistency and coverage
@@ -373,6 +393,10 @@ def validate() -> dict:
         "wrong_image_dimensions": bad_dimensions,
         "image_hash_mismatches": bad_hashes,
         "invalid_entities_or_boxes": bad_boxes,
+        "annotation_geometry_error_count": len(geometry_errors),
+        "annotation_geometry_errors": geometry_errors[:50],
+        "overlap_warning_count": len(overlap_warnings),
+        "overlap_warnings": overlap_warnings[:50],
         "split_group_leakage": leakage,
         "inconsistent_group_templates": inconsistent_group_templates,
         "template_counts": dict(template_counts),

@@ -20,6 +20,10 @@
   "wrong_image_dimensions": 0,
   "image_hash_mismatches": 0,
   "invalid_entities_or_boxes": 0,
+  "annotation_geometry_error_count": 0,
+  "annotation_geometry_errors": [],
+  "overlap_warning_count": 0,
+  "overlap_warnings": [],
   "split_group_leakage": {},
   "inconsistent_group_templates": {},
   "template_counts": {
