@@ -26,3 +26,5 @@ outputs/
 
 # Generated dataset splits
 datasets/splits/
+
+datasets/reports/annotation_previews/
